@@ -1,6 +1,6 @@
 # Microsoft Cloud sites and authentication endpoints
 
-This reference maps the public Microsoft cloud entry points for Power BI, Power Apps, Power Platform admin center, Power Automate, SharePoint, Microsoft 365, and Azure across commercial, US government, classified, and other sovereign clouds.
+This reference maps the public Microsoft cloud entry points for Power BI, Power Apps, Power Platform admin center, Power Automate, SharePoint, Microsoft Copilot, Copilot Studio, Microsoft 365, and Azure across commercial, US government, classified, and other sovereign clouds.
 
 > Endpoint lists change. For firewall allow lists and compliance work, use the Microsoft-published endpoint JSON feeds or service-specific documentation rather than copying this file as a static allow list.
 
@@ -74,6 +74,28 @@ This reference maps the public Microsoft cloud entry points for Power BI, Power 
 | DoD | `https://{tenant}.sharepoint-mil.us`, `https://{tenant}-my.sharepoint-mil.us`, `*.dps.mil` | DoD M365 endpoints, including `*.sharepoint-mil.us`, `*.dps.mil`, and `*.svc.ms` | `login.microsoftonline.us`, `dod-graph.microsoft.us` |
 | Secret / classified | Not publicly documented | Not publicly documented | Use classified cloud documentation. |
 | China / 21Vianet | `https://{tenant}.sharepoint.cn` and related `*.sharepoint.cn` endpoints | Microsoft 365 operated by 21Vianet endpoint feed applies. | China authority metadata, `microsoftgraph.chinacloudapi.cn` |
+
+### Microsoft Copilot
+
+| Cloud | User entry points | Admin / network notes | Identity / data boundary |
+| --- | --- | --- | --- |
+| Commercial | `https://m365copilot.com`, `https://copilot.cloud.microsoft`, `https://m365.cloud.microsoft/chat`, plus Copilot experiences in Microsoft 365 apps, Teams, Outlook, Edge, and Windows | Allow Microsoft 365 endpoints, Copilot endpoints, `*.cloud.microsoft`, and WSS connectivity to `*.office.com`, `*.cloud.microsoft`, and `copilot.cloud.microsoft`. Admin settings are in Microsoft 365 admin center > Copilot. | `login.microsoftonline.com`; Microsoft Graph and Work IQ grounding use the user's Microsoft 365 permissions. |
+| GCC | Microsoft Copilot is available in GCC and operates within the GCC tenant. User entry points and feature availability can differ from commercial rollout timing. | Use Microsoft 365 Worldwide / GCC endpoint guidance plus Copilot network requirements. | `login.microsoftonline.com`; prompts, responses, and generated content remain within the government cloud tenant boundary. |
+| GCC High | Microsoft Copilot is available in GCC High and operates within the GCC High tenant. | Use GCC High Microsoft 365 endpoint feed and Copilot government feature availability guidance. | `login.microsoftonline.us`; Graph grounding uses `graph.microsoft.us` where Graph is involved. |
+| DoD | Microsoft Copilot is available in DoD and operates within the DoD tenant. | Use DoD Microsoft 365 endpoint feed and Copilot government feature availability guidance. | `login.microsoftonline.us`; Graph grounding uses `dod-graph.microsoft.us` where Graph is involved. |
+| Secret / classified | Not publicly documented | Use classified cloud documentation and account team guidance. | Not publicly documented. |
+| China / 21Vianet | Validate availability and entry points through Microsoft 365 operated by 21Vianet documentation and tenant experience. | Use China / 21Vianet endpoint feed where supported. | China authority metadata; Graph uses `microsoftgraph.chinacloudapi.cn` where Graph is involved. |
+
+### Copilot Studio
+
+| Cloud | Authoring portal | API / related endpoints | Identity / hosting notes |
+| --- | --- | --- | --- |
+| Commercial | `https://copilotstudio.microsoft.com` | `api.powerva.microsoft.com`, Power Automate `flow.microsoft.com`, Power Apps `make.powerapps.com`, Power Platform admin center `admin.powerplatform.microsoft.com` | `login.microsoftonline.com`; runs as part of Power Platform and relies on Microsoft Entra ID, Dataverse, connectors, and Power Automate. |
+| GCC | `https://gcc.powerva.microsoft.us` | `gcc.api.powerva.microsoft.us`, `gov.flow.microsoft.us`, `make.gov.powerapps.us`, `gcc.admin.powerplatform.microsoft.us` | GCC uses public Microsoft Entra ID: `login.microsoftonline.com`. Customer content is stored in the United States. |
+| GCC High | `https://high.powerva.microsoft.us` | `high.api.powerva.microsoft.us`, `high.flow.microsoft.us`, `make.high.powerapps.us`, `high.admin.powerplatform.microsoft.us` | Uses Microsoft Entra Government: `login.microsoftonline.us`; deployed to Azure Government and aligned to GCC High isolation requirements. |
+| DoD | Not listed in the Copilot Studio US Government service URL table. | Not listed in the Copilot Studio US Government service URL table. | Validate DoD availability with current product and tenant documentation before planning deployment. |
+| Secret / classified | Not publicly documented | Not publicly documented | Use classified cloud documentation. |
+| China / 21Vianet | Validate availability through Power Platform operated by 21Vianet and Copilot Studio licensing documentation. | Validate tenant-specific endpoints. | China authority metadata where supported. |
 
 ### Microsoft 365
 
@@ -162,6 +184,10 @@ Use these feeds for live allow-list automation:
 - [Microsoft 365 US Government GCC High endpoints](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-u-s-government-gcc-high-endpoints)
 - [Microsoft 365 US Government DoD endpoints](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-u-s-government-dod-endpoints)
 - [Microsoft 365 operated by 21Vianet endpoints](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges-21vianet)
+- [Microsoft Copilot overview](https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-overview)
+- [Microsoft Copilot requirements](https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-copilot-requirements)
+- [Understand Microsoft US government cloud environments for Microsoft 365 and Microsoft Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/gov-overview)
+- [Copilot Studio US Government customers](https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-licensing-gcc)
 - [Power BI for US Government customers](https://learn.microsoft.com/en-us/fabric/enterprise/powerbi/service-government-us-overview)
 - [Power Apps US Government](https://learn.microsoft.com/en-us/power-platform/admin/powerapps-us-government)
 - [Power Automate US Government](https://learn.microsoft.com/en-us/power-automate/us-govt)
