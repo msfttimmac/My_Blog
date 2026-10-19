@@ -1,10 +1,4 @@
----
-layout: post
-title: "Weekly Microsoft Blog & Video Digest – October 19, 2026"
-date: 2026-10-19
-categories: [microsoft, power-platform, fabric, copilot, azure-ai, us-government-cloud]
-tags: [weekly-digest, gcc, gcc-high, dod, azure-government, fedramp, deprecations]
----
+
 
 # Weekly Microsoft Blog & Video Digest – October 19, 2026
 
