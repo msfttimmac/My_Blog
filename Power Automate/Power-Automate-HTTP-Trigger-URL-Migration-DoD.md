@@ -1,4 +1,4 @@
-# Power Automate HTTP trigger failures after the trigger URL migration (DoD / US Government clouds)
+# Power Automate HTTP trigger failures after the trigger URL migration (US Government clouds)
 
 **Applies to:** Power Automate cloud flows that use the **When an HTTP request is received** trigger, called by another flow, an app or an external system. The case below was seen in a **US Government DoD** environment, but the same pattern applies to commercial, GCC and GCC High.
 
