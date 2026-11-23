@@ -1,0 +1,116 @@
+name: Weekly AI deprecation research
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+      timezone: America/New_York
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-deprecation-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      as_of: ${{ steps.prepare.outputs.as_of }}
+      baseline_sha256: ${{ steps.prepare.outputs.baseline_sha256 }}
+    steps:
+      - name: Check Copilot authentication
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "::error::Add the COPILOT_GITHUB_TOKEN Actions secret with Copilot Requests permission."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Test report validation
+        run: node --test .github/scripts/validate-deprecations.test.mjs
+
+      - name: Install Copilot CLI
+        run: npm install --global @github/copilot@1.0.114-0
+
+      - name: Prepare isolated research directory
+        id: prepare
+        run: node .github/scripts/validate-deprecations.mjs prepare "$RUNNER_TEMP/deprecation-research"
+
+      - name: Perform fresh AI research
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_HOME: ${{ runner.temp }}/deprecation-copilot-home
+        run: |
+          cd "$RUNNER_TEMP/deprecation-research"
+          copilot --no-auto-update --no-ask-user \
+            --deny-tool='shell,memory,github' \
+            --allow-tool='write(report.md),write(research.json)' \
+            --allow-url='https://learn.microsoft.com,https://docs.github.com,https://github.blog,https://github.com,https://techcommunity.microsoft.com,https://community.powerplatform.com,https://community.fabric.microsoft.com,https://support.microsoft.com' \
+            -p "$(cat prompt.md)"
+
+      - name: Verify fresh report and primary-source excerpts
+        env:
+          AS_OF: ${{ steps.prepare.outputs.as_of }}
+        run: node .github/scripts/validate-deprecations.mjs verify "$RUNNER_TEMP/deprecation-research" "$AS_OF"
+
+      - name: Retain validated report and research receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-deprecation-research
+          path: |
+            ${{ runner.temp }}/deprecation-research/report.md
+            ${{ runner.temp }}/deprecation-research/research.json
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: research
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: validated-deprecation-research
+          path: ${{ runner.temp }}/deprecation-publication
+
+      - name: Publish only the validated blog post
+        env:
+          AS_OF: ${{ needs.research.outputs.as_of }}
+          BASELINE_SHA256: ${{ needs.research.outputs.baseline_sha256 }}
+        run: |
+          node .github/scripts/validate-deprecations.mjs publish "$RUNNER_TEMP/deprecation-publication" "$AS_OF" "$BASELINE_SHA256"
+          report="Deprecation Gatherings/Microsoft-Deprecations-2026-11-20.md"
+          if git diff --quiet -- "$report"; then
+            echo "Fresh AI research completed; the report has no content differences." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$report"
+          git commit -m "Refresh Microsoft deprecation research ($AS_OF)" \
+            -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          git push origin HEAD:master
+          echo "Fresh AI research published: [Microsoft deprecation radar](https://github.com/msfttimmac/My_Blog/blob/master/Deprecation%20Gatherings/Microsoft-Deprecations-2026-11-20.md)." >> "$GITHUB_STEP_SUMMARY"
